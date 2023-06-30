@@ -10,14 +10,26 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class ICMAckScript {
-
+	static WebDriver driver = new EdgeDriver();
     public static void main(String[] args) throws InterruptedException {
-        System.setProperty("webdriver.edge.driver", "D:\\Rajat\\selenium\\Drivers\\edgedriver_win64\\msedgedriver.exe");
-        WebDriver driver = new EdgeDriver();
+        initialSetup();
+        portalLink();
+        checkNewIncidents();
+    }
+    
+    public static void initialSetup() {
+    	System.setProperty("webdriver.edge.driver", "D:\\Rajat\\selenium\\Drivers\\edgedriver_win64\\msedgedriver.exe");
         driver.manage().window().maximize();
-        driver.get("https://portal.microsofticm.com/imp/v3/incidents/search/advanced?sl=0pkusngqfou");
-
-        WebDriverWait wait = new WebDriverWait(driver, 15); // Set the maximum wait time as needed
+    }
+    
+    public static void portalLink() {
+    	
+    	driver.get("https://portal.microsofticm.com/imp/v3/incidents/search/advanced?sl=0pkusngqfou");
+    }
+    
+    public static void checkNewIncidents() throws InterruptedException {
+    	
+    	WebDriverWait wait = new WebDriverWait(driver, 30); // Set the maximum wait time as needed
 
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.name("MSIT-ADFS-Federation")));
         element.click();
@@ -32,17 +44,18 @@ public class ICMAckScript {
         
         List<WebElement> rows = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
         int rsize = rows.size();
-        System.out.println(rows.size());
+//        System.out.println(rows.size());
         List<WebElement> cols = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td"));
         int colsize = cols.size();
-        System.out.println(cols.size());
+//        System.out.println(cols.size());
       
         String incidentID =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(colsize-10)+"]")).getText();
-    	System.out.println(incidentID);
+    	System.out.println("Current Incident: "+incidentID);
 
     	String latest = incidentID;
     	
-        while(true) {
+    	
+    	while(true) {
         	System.out.println("Inside Loop");
         	System.out.println("Entered and Started");
         	driver.navigate().refresh();
