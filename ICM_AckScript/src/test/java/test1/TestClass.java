@@ -9,7 +9,7 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class ICMAckScript {
+public class TestClass {
 	static WebDriver driver;
     public static void main(String[] args) throws InterruptedException {
         initialSetup();
@@ -22,9 +22,7 @@ public class ICMAckScript {
     	driver = new EdgeDriver();
         driver.manage().window().maximize();
         
-        /*Added shutdown hook
-         * so that whenever we stop the console
-         * it will automatically shuts down our webdriver*/
+     // Add shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 if (driver != null) {
@@ -68,11 +66,8 @@ public class ICMAckScript {
     	System.out.println("Owning Team: "+ owningTeam);
 
     	String latest = incidentID;
-    	
-    	
     	/*Following block has been modified 
-    	 *Our Program can now acknowledge more than 1 tickets
-    	 *Our program can now acknowledge only those tickets which are for Live Site team. */
+    	 *Our Program can now acknowledge more than 1 tickets */
     	
     	while(true) {
     		Boolean flag = true;
@@ -122,7 +117,6 @@ public class ICMAckScript {
         	Thread.sleep(10000);
         	
         }
-
     }
 }
 
