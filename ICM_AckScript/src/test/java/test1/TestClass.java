@@ -3,6 +3,7 @@ package test1;
 import java.util.List;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -68,7 +69,7 @@ public class TestClass {
     
     public static void checkNewIncidents() throws InterruptedException {
     	
-    	WebDriverWait wait = new WebDriverWait(driver, 30); // Set the maximum wait time as needed
+    	WebDriverWait wait = new WebDriverWait(driver, 40); // Set the maximum wait time as needed
 
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.name("MSIT-ADFS-Federation")));
         element.click();
@@ -79,14 +80,64 @@ public class TestClass {
         element = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"tilesHolder\"]/div[1]/div/div")));
         element.click();
         System.out.println("Started");
-        Thread.sleep(20000);
+     // Wait for the radio buttons to become clickable
+//        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("span.btn-group-toggle")));
+        
+        // Find all the radio buttons within the radio button group
+//        WebElement radioGroup = driver.findElement(By.cssSelector("span.btn-group-toggle"));
+//        java.util.List<WebElement> radioButtons = radioGroup.findElements(By.tagName("input"));
+//        for (WebElement radioButton : radioButtons) {
+//            WebElement siblingSpan = radioButton.findElement(By.xpath("./following-sibling::span"));
+//            String labelText = siblingSpan.getText();
+//            System.out.println(labelText);
+//        }
+        // Find the "OFF" radio button and check if it is already clicked
+//        WebElement offButton = radioButtons.get(0); // Assuming the "OFF" button is the first one
+//        boolean isSelect = radioButtons.get(0).isSelected();
+//        System.out.println("selected?? "+isSelect);
+//        boolean isOffButtonClicked = offButton.getAttribute("class").contains("ng-valid ng-not-empty ng-dirty ng-touched ng-valid-parse");
+//        System.out.println(isOffButtonClicked);
+//
+//        // If the "OFF" button is not clicked, click on it
+//        if (!isOffButtonClicked) {
+//        	System.out.println("inside if");
+//        	wait.until(ExpectedConditions.elementToBeClickable(offButton));
+//        	JavascriptExecutor js = (JavascriptExecutor) driver;
+//        	js.executeScript("arguments[0].click();", offButton);
+//        }
+//        else {
+//        	System.out.println("ALready Clicked");
+//        }
+        
+     // Wait for the radio buttons to become clickable
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("span.btn-group-toggle")));
+
+        // Find the "OFF" button label element and check if it is clicked
+        WebElement offButtonLabel = driver.findElement(By.cssSelector("span.btn-group-toggle label.btn:nth-of-type(1)"));
+        boolean isOffButtonClicked = offButtonLabel.getAttribute("class").contains("active");
+        System.out.println(isOffButtonClicked);
+
+        // If the "OFF" button is not clicked, perform the necessary actions
+        if (!isOffButtonClicked) {
+            System.out.println("OFF button is not clicked. Performing actions...");
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+        	js.executeScript("arguments[0].click();", offButtonLabel);
+            
+            // Add your code to perform actions when the "OFF" button is not clicked
+        } else {
+            System.out.println("OFF button is already clicked.");
+            // Add your code for when the "OFF" button is already clicked
+        }
+        
+
+        Thread.sleep(18000);
         
         List<WebElement> rows = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
         int rsize = rows.size();
         System.out.println(rows.size());
         List<WebElement> cols = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td"));
         int colsize = cols.size();
-        System.out.println(cols.size());
+//        System.out.println(colsize);
       
         String owningTeam = "";
         String sev;
@@ -97,9 +148,10 @@ public class TestClass {
         owningTeam = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(ownTeamCol)+"]")).getText();
         sevCol = DynamicColumns.checkNewIncidents("Severity", driver);
         sev = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(sevCol)+"]")).getText();
-    	System.out.println("Current Incident: "+incidentID);
-    	System.out.println("Owning Team: "+ owningTeam);
-    	System.out.println("Severity: "+sev);
+        
+//    	System.out.println("Current Incident: "+incidentID);
+//    	System.out.println("Owning Team: "+ owningTeam);
+//    	System.out.println("Severity: "+sev);
 
     	String latest = incidentID;
     	/*Following block has been modified 
@@ -107,18 +159,12 @@ public class TestClass {
     	
     	while(true) {
     		Boolean flag = true;
-//    		Boolean flag2 = true;
-        	System.out.println("Inside Loop");
-        	System.out.println("Entered and Started");
-        	driver.navigate().refresh();
-        	System.out.println("refreshed");
-        	Thread.sleep(17000);
-        	List<WebElement>  rws = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
-            rsize = rws.size();
-            System.out.println(rsize);
-            List<WebElement> columns = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td"));
-            colsize = columns.size();
-            System.out.println(colsize);
+    		
+    		// Click on the "Run" button
+    		WebElement runButton = driver.findElement(By.cssSelector("button[data-test-id='runQuery']"));
+    		runButton.click();
+    		Thread.sleep(17000);
+    		
             String tillHere = latest;
             String newIncident =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(idCol)+"]")).getText();
             if(!newIncident.equals(latest)) {
@@ -126,20 +172,20 @@ public class TestClass {
                 	newIncident =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(idCol)+"]")).getText();
                 	owningTeam = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(ownTeamCol)+"]")).getText();
                 	sev = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(sevCol)+"]")).getText();
-                	System.out.println("Owning Team: "+owningTeam);
+//                	System.out.println("Owning Team: "+owningTeam);
                 	if(owningTeam.equals("C+AI Learn Eng Live Site")) {
                 		owningTeam = "C + AI Learn Engineering Live Site";
-                		System.out.println(newIncident);
+//                		System.out.println(newIncident);
                     	if(!newIncident.equals(tillHere)) {
+                    		latest = newIncident;
+                    		driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td[1]")).click();
+                    		driver.findElement(By.xpath("//*[@id=\"skip-to-main\"]/ui-view/ui-view/icm-collapsible-panels/main-panel/searchresults/ul/li[6]/div/command-buttons-addnl/delayload/incident-actionbuttons/div/div/div[2]/acknowledgeincident/button")).click();
                     		System.out.println("New Incident came: "+newIncident);
                     		System.out.println("Owning Team: "+owningTeam);
                     		System.out.println("Severity: "+sev);
                     		voice.speak("New Incident has Arrived. Owning Team is "+ owningTeam + " and Severity is "+sev); // Speak the text
-                    		latest = newIncident;
-                    		driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td[1]")).click();
-                    		driver.findElement(By.xpath("//*[@id=\"skip-to-main\"]/ui-view/ui-view/icm-collapsible-panels/main-panel/searchresults/ul/li[6]/div/command-buttons-addnl/delayload/incident-actionbuttons/div/div/div[2]/acknowledgeincident/button")).click();
-                    		voice.speak("Acknowledgement Completed");
-                    		System.out.println("Acknowledged");
+                    		voice.speak("Acknowledged");
+//                    		System.out.println("Acknowledged");
                     	}
                     	else {
                     		flag = false;
@@ -153,19 +199,21 @@ public class TestClass {
                 }
             }
             else {
-            	System.out.println();
-            	System.out.println("No New Incident!!");
-            	System.out.println("Incident ID: "+latest);
-            	System.out.println("Owning Team: "+owningTeam);
-            	System.out.println("Severity: "+sev);
-            	System.out.println();
+//            	System.out.println();
+//            	System.out.println("No New Incident!!");
+//            	System.out.println("Incident ID: "+latest);
+//            	System.out.println("Owning Team: "+owningTeam);
+//            	System.out.println("Severity: "+sev);
+//            	System.out.println();
 //            	voice.speak("No Incident Found.");
             }
             
         	
 //        	Thread.sleep(7000);
+//            Thread.sleep(9000);
         	
         }
+
     }
 }
 

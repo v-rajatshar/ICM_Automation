@@ -3,6 +3,7 @@ package test1;
 import java.util.List;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -64,8 +65,6 @@ public class ICMAckScript {
     }
     
     
-
-    
     public static void checkNewIncidents() throws InterruptedException {
     	
     	WebDriverWait wait = new WebDriverWait(driver, 30); // Set the maximum wait time as needed
@@ -79,6 +78,27 @@ public class ICMAckScript {
         element = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"tilesHolder\"]/div[1]/div/div")));
         element.click();
         System.out.println("Started");
+        
+     // Wait for the radio buttons to become clickable
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("span.btn-group-toggle")));
+
+        // Find the "OFF" button label element and check if it is clicked
+        WebElement offButtonLabel = driver.findElement(By.cssSelector("span.btn-group-toggle label.btn:nth-of-type(1)"));
+        boolean isOffButtonClicked = offButtonLabel.getAttribute("class").contains("active");
+        System.out.println(isOffButtonClicked);
+
+        // If the "OFF" button is not clicked, perform the necessary actions
+        if (!isOffButtonClicked) {
+            System.out.println("OFF button is not clicked. Performing actions...");
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+        	js.executeScript("arguments[0].click();", offButtonLabel);
+            
+            // Add your code to perform actions when the "OFF" button is not clicked
+        } else {
+            System.out.println("OFF button is already clicked.");
+            // Add your code for when the "OFF" button is already clicked
+        }
+        
         Thread.sleep(20000);
         
         List<WebElement> rows = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
@@ -110,8 +130,11 @@ public class ICMAckScript {
 //    		Boolean flag2 = true;
         	System.out.println("Inside Loop");
         	System.out.println("Entered and Started");
-        	driver.navigate().refresh();
-        	System.out.println("refreshed");
+//        	driver.navigate().refresh();
+        	// Click on the "Run" button
+    		WebElement runButton = driver.findElement(By.cssSelector("button[data-test-id='runQuery']"));
+    		runButton.click();
+//        	System.out.println("refreshed");
         	Thread.sleep(17000);
         	List<WebElement>  rws = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
             rsize = rws.size();
