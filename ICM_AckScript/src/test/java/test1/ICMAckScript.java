@@ -22,6 +22,7 @@ public class ICMAckScript {
         initialSetup();
         portalLink();
         checkNewIncidents();
+        
     }
     
     public static void initialSetup() {
@@ -59,15 +60,19 @@ public class ICMAckScript {
         });
     }
     
-    public static void portalLink() {
+    public static void portalLink() throws InterruptedException {
     	
     	driver.get("https://portal.microsofticm.com/imp/v3/incidents/search/advanced?sl=0pkusngqfou");
+    	
+        
     }
     
     
+
+    
     public static void checkNewIncidents() throws InterruptedException {
     	
-    	WebDriverWait wait = new WebDriverWait(driver, 30); // Set the maximum wait time as needed
+    	WebDriverWait wait = new WebDriverWait(driver, 40); // Set the maximum wait time as needed
 
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.name("MSIT-ADFS-Federation")));
         element.click();
@@ -78,7 +83,7 @@ public class ICMAckScript {
         element = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"tilesHolder\"]/div[1]/div/div")));
         element.click();
         System.out.println("Started");
-        
+     
      // Wait for the radio buttons to become clickable
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("span.btn-group-toggle")));
 
@@ -99,70 +104,64 @@ public class ICMAckScript {
             // Add your code for when the "OFF" button is already clicked
         }
         
-        Thread.sleep(20000);
-        
-        List<WebElement> rows = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
+
+     // Wait until the table element containing the rows is visible
+        WebElement tableElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table")));
+
+        List<WebElement> rows = tableElement.findElements(By.xpath(".//tr"));
         int rsize = rows.size();
-        System.out.println(rows.size());
-        List<WebElement> cols = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td"));
-        int colsize = cols.size();
-        System.out.println(cols.size());
+
+//        List<WebElement> cols = rows.get(0).findElements(By.xpath(".//td"));
+//        int colsize = cols.size();
       
         String owningTeam = "";
-        String sev;
-        int idCol,sevCol,ownTeamCol;
+        String sev, title;
+        int idCol,sevCol,ownTeamCol,titleCol;
         idCol = DynamicColumns.checkNewIncidents("ID", driver);
         String incidentID =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(idCol)+"]")).getText();
         ownTeamCol = DynamicColumns.checkNewIncidents("Owning Team", driver);
         owningTeam = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(ownTeamCol)+"]")).getText();
         sevCol = DynamicColumns.checkNewIncidents("Severity", driver);
         sev = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(sevCol)+"]")).getText();
-    	System.out.println("Current Incident: "+incidentID);
-    	System.out.println("Owning Team: "+ owningTeam);
-    	System.out.println("Severity: "+sev);
-
+        titleCol = DynamicColumns.checkNewIncidents("Title", driver);
+        title = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(titleCol)+"]")).getText();
+        System.out.println(title);
+        
     	String latest = incidentID;
     	/*Following block has been modified 
     	 *Our Program can now acknowledge more than 1 tickets */
     	
     	while(true) {
     		Boolean flag = true;
-//    		Boolean flag2 = true;
-        	System.out.println("Inside Loop");
-        	System.out.println("Entered and Started");
-//        	driver.navigate().refresh();
-        	// Click on the "Run" button
+    		
+    		// Click on the "Run" button
     		WebElement runButton = driver.findElement(By.cssSelector("button[data-test-id='runQuery']"));
     		runButton.click();
-//        	System.out.println("refreshed");
-        	Thread.sleep(17000);
-        	List<WebElement>  rws = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr"));
-            rsize = rws.size();
-            System.out.println(rsize);
-            List<WebElement> columns = driver.findElements(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td"));
-            colsize = columns.size();
-            System.out.println(colsize);
+    		
             String tillHere = latest;
-            String newIncident =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-99)+"]/td["+(idCol)+"]")).getText();
+            WebElement newinci = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table")));
+            String newIncident =  newinci.findElement(By.xpath(".//tr["+(rsize-99)+"]/td["+(idCol)+"]")).getText();
             if(!newIncident.equals(latest)) {
             	for(int i = 99; flag!= false; --i) {
                 	newIncident =  driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(idCol)+"]")).getText();
                 	owningTeam = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(ownTeamCol)+"]")).getText();
                 	sev = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(sevCol)+"]")).getText();
-                	System.out.println("Owning Team: "+owningTeam);
+                	title = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(titleCol)+"]")).getText();
+//                	System.out.println("Owning Team: "+owningTeam);
                 	if(owningTeam.equals("C+AI Learn Eng Live Site")) {
                 		owningTeam = "C + AI Learn Engineering Live Site";
-                		System.out.println(newIncident);
+//                		System.out.println(newIncident);
                     	if(!newIncident.equals(tillHere)) {
+                    		latest = newIncident;
+                    		
+                    		driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td[1]")).click();
+                    		driver.findElement(By.xpath("//*[@id=\"skip-to-main\"]/ui-view/ui-view/icm-collapsible-panels/main-panel/searchresults/ul/li[6]/div/command-buttons-addnl/delayload/incident-actionbuttons/div/div/div[2]/acknowledgeincident/button")).click();
                     		System.out.println("New Incident came: "+newIncident);
                     		System.out.println("Owning Team: "+owningTeam);
                     		System.out.println("Severity: "+sev);
                     		voice.speak("New Incident has Arrived. Owning Team is "+ owningTeam + " and Severity is "+sev); // Speak the text
-                    		latest = newIncident;
-                    		driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr[1]/td[1]")).click();
-                    		driver.findElement(By.xpath("//*[@id=\"skip-to-main\"]/ui-view/ui-view/icm-collapsible-panels/main-panel/searchresults/ul/li[6]/div/command-buttons-addnl/delayload/incident-actionbuttons/div/div/div[2]/acknowledgeincident/button")).click();
-                    		voice.speak("Acknowledgement Completed");
-                    		System.out.println("Acknowledged");
+                    		voice.speak("Acknowledged");
+//                    		System.out.println("Acknowledged");
                     	}
                     	else {
                     		flag = false;
@@ -176,19 +175,20 @@ public class ICMAckScript {
                 }
             }
             else {
-            	System.out.println();
-            	System.out.println("No New Incident!!");
-            	System.out.println("Incident ID: "+latest);
-            	System.out.println("Owning Team: "+owningTeam);
-            	System.out.println("Severity: "+sev);
-            	System.out.println();
+//            	System.out.println();
+//            	System.out.println("No New Incident!!");
+//            	System.out.println("Incident ID: "+latest);
+//            	System.out.println("Owning Team: "+owningTeam);
+//            	System.out.println("Severity: "+sev);
+//            	System.out.println();
 //            	voice.speak("No Incident Found.");
             }
             
         	
-//        	Thread.sleep(7000);
+        	Thread.sleep(4000);
         	
         }
+
     }
 }
 
