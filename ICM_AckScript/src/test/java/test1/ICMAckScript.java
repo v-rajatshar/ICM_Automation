@@ -1,5 +1,8 @@
 package test1;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -10,45 +13,31 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.sun.speech.freetts.Voice;
-import com.sun.speech.freetts.VoiceManager;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 
 
 public class ICMAckScript {
 	static WebDriver driver;
-	static Voice voice;
-    static VoiceManager voiceManager;
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, FileNotFoundException, JavaLayerException {
         initialSetup();
         portalLink();
         checkNewIncidents();
         
     }
     
+    public static void voiceMod(String name) throws FileNotFoundException, JavaLayerException {
+    	
+    	FileInputStream fis = new FileInputStream(name);
+    	Player player = new Player(fis);
+    	player.play();
+
+    }
+    
     public static void initialSetup() {
     	System.setProperty("webdriver.edge.driver", "D:\\Rajat\\selenium\\Drivers\\edgedriver_win64\\msedgedriver.exe");
     	driver = new EdgeDriver();
         driver.manage().window().maximize();
-        
-     // Set the freetts.voices system property
-        System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
-        
-        // Initialize the VoiceManager
-        voiceManager = VoiceManager.getInstance();
-        
-        // Get the desired voice
-        voice = voiceManager.getVoice("kevin16");
-        if (voice == null) {
-            System.err.println("Requested voice not available");
-            return;
-        }
-        
-        // Set the pitch and speed
-        voice.setPitch(100); // Set the pitch value (0-100)
-        voice.setRate(120); // Set the speed value (80-450)
-        
-        // Allocate the voice
-        voice.allocate();
         
      // Add shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -70,7 +59,7 @@ public class ICMAckScript {
     
 
     
-    public static void checkNewIncidents() throws InterruptedException {
+    public static void checkNewIncidents() throws InterruptedException, FileNotFoundException, JavaLayerException {
     	
     	WebDriverWait wait = new WebDriverWait(driver, 40); // Set the maximum wait time as needed
 
@@ -84,12 +73,21 @@ public class ICMAckScript {
         element.click();
         System.out.println("Started");
      
+     
+        
+
+     // Wait until the table element containing the rows is visible
+        WebElement tableElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table")));
+
+        List<WebElement> rows = tableElement.findElements(By.xpath(".//tr"));
+        int rsize = rows.size();
+        
      // Wait for the radio buttons to become clickable
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("span.btn-group-toggle")));
 
         // Find the "OFF" button label element and check if it is clicked
         WebElement offButtonLabel = driver.findElement(By.cssSelector("span.btn-group-toggle label.btn:nth-of-type(1)"));
-        boolean isOffButtonClicked = offButtonLabel.getAttribute("class").contains("active");
+        boolean isOffButtonClicked = offButtonLabel.getAttribute("class").contains("btn active");
         System.out.println(isOffButtonClicked);
 
         // If the "OFF" button is not clicked, perform the necessary actions
@@ -98,21 +96,11 @@ public class ICMAckScript {
             JavascriptExecutor js = (JavascriptExecutor) driver;
         	js.executeScript("arguments[0].click();", offButtonLabel);
             
-            // Add your code to perform actions when the "OFF" button is not clicked
         } else {
             System.out.println("OFF button is already clicked.");
-            // Add your code for when the "OFF" button is already clicked
         }
-        
 
-     // Wait until the table element containing the rows is visible
-        WebElement tableElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table")));
 
-        List<WebElement> rows = tableElement.findElements(By.xpath(".//tr"));
-        int rsize = rows.size();
-
-//        List<WebElement> cols = rows.get(0).findElements(By.xpath(".//td"));
-//        int colsize = cols.size();
       
         String owningTeam = "";
         String sev, title;
@@ -149,8 +137,6 @@ public class ICMAckScript {
                 	title = driver.findElement(By.xpath("//div[@class='k-grid-content k-auto-scrollable']/table//tr["+(rsize-i)+"]/td["+(titleCol)+"]")).getText();
 //                	System.out.println("Owning Team: "+owningTeam);
                 	if(owningTeam.equals("C+AI Learn Eng Live Site")) {
-                		owningTeam = "C + AI Learn Engineering Live Site";
-//                		System.out.println(newIncident);
                     	if(!newIncident.equals(tillHere)) {
                     		latest = newIncident;
                     		
@@ -159,8 +145,14 @@ public class ICMAckScript {
                     		System.out.println("New Incident came: "+newIncident);
                     		System.out.println("Owning Team: "+owningTeam);
                     		System.out.println("Severity: "+sev);
-                    		voice.speak("New Incident has Arrived. Owning Team is "+ owningTeam + " and Severity is "+sev); // Speak the text
-                    		voice.speak("Acknowledged");
+                    		if(title.contains("[CatchPoint]")) {
+                    			speak("catchpoint.mp3");
+                    			speak("acknow.mp3");
+                    		}
+                    		else {
+                    			speak("new_Arrived.mp3");
+                    			speak("acknow.mp3");
+							}
 //                    		System.out.println("Acknowledged");
                     	}
                     	else {
@@ -168,29 +160,31 @@ public class ICMAckScript {
                     	}
                 	}
                 	else {
-//                		System.out.println("Incident is not for Live Site.");
-                		voice.speak("Incident is not for Live Site.");
+                		speak("notLive.mp3");
                 	}
                 	
                 }
             }
-            else {
-//            	System.out.println();
-//            	System.out.println("No New Incident!!");
-//            	System.out.println("Incident ID: "+latest);
-//            	System.out.println("Owning Team: "+owningTeam);
-//            	System.out.println("Severity: "+sev);
-//            	System.out.println();
-//            	voice.speak("No Incident Found.");
-            }
             
-        	
         	Thread.sleep(4000);
         	
         }
 
     }
-}
+    
+    public static void speak(String fName) throws FileNotFoundException, JavaLayerException {
+    	
+    	String fileName = fName;
+    	URL resource = ICMAckScript.class.getResource(fileName);
+    	if (resource == null) {
+    	    System.err.println("File not found: " + fileName);
+    	    return;
+    	}
+
+    	String filePath = resource.getFile();
+    	voiceMod(filePath);
+    	
+    }}
 
 
 
